@@ -1,19 +1,28 @@
 import React, { Component } from "react";
 import { Field, reduxForm } from "redux-form";
+import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { createPost } from "../actions";
 
 class PostNew extends Component {
   renderField(field) {
+    const {
+      meta: { touched, error }
+    } = field;
+    const className = `form-group ${touched && error ? "has-danger" : ""}`;
     return (
-      <div className="form-group">
+      <div className={className}>
         <label>{field.label}</label>
-        <input className="form-contrl" {...field.input} type="text" />
-        <div color="red">{field.meta.error}</div>
+        <input className="form-control" {...field.input} type="text" />
+        <div className="text-help">{touched ? error : ""}</div>
       </div>
     );
   }
 
   onSubmit(values) {
-    console.log(values);
+    this.props.createPost(values, () => {
+      this.props.history.push("/");
+    });
   }
 
   render() {
@@ -34,15 +43,13 @@ class PostNew extends Component {
         <button type="submit" className="btn btn-primary">
           Submit
         </button>
+        <Link to="/" className="btn btn-danger">
+          Cancel
+        </Link>
       </form>
     );
   }
 }
-
-export default reduxForm({
-  validate,
-  form: "PostsNewForm"
-})(PostNew);
 
 function validate(values) {
   const errors = {};
@@ -51,12 +58,21 @@ function validate(values) {
     errors.title = "Enter a title!";
   }
   if (!values.categories) {
-    errors.category = "Enter a category!";
+    errors.categories = "Enter a category!";
   }
   if (!values.content) {
     errors.content = "Enter a content!";
   }
-
   // empty errors object depicts successful validation
   return errors;
 }
+
+export default reduxForm({
+  validate,
+  form: "PostsNewForm"
+})(
+  connect(
+    null,
+    { createPost }
+  )(PostNew)
+);
